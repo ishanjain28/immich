@@ -16,7 +16,6 @@ const config = {
         target: process.env.PUBLIC_IMMICH_SERVER_URL,
         secure: true,
         changeOrigin: true,
-        logLevel: 'debug',
         rewrite: (path) => path.replace(/^\/api/, ''),
         ws: true,
       },
