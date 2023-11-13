@@ -24,6 +24,7 @@ class PersonNameEditForm extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = useTextEditingController(text: personName);
+    final isError = useState(false);
 
     return AlertDialog(
       title: const Text(
@@ -34,20 +35,18 @@ class PersonNameEditForm extends HookConsumerWidget {
         child: TextFormField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Name',
+            border: const OutlineInputBorder(),
+            errorText: isError.value ? 'Error occured' : null,
           ),
         ),
       ),
       actions: [
         TextButton(
-          style: TextButton.styleFrom(),
-          onPressed: () {
-            Navigator.of(context, rootNavigator: true)
-                .pop<PersonNameEditFormResult>(
-              PersonNameEditFormResult(false, ''),
-            );
-          },
+          onPressed: () => context.pop(
+            PersonNameEditFormResult(false, ''),
+          ),
           child: Text(
             "Cancel",
             style: TextStyle(
@@ -57,18 +56,15 @@ class PersonNameEditForm extends HookConsumerWidget {
           ),
         ),
         TextButton(
-          onPressed: () {
-            ref.read(
-              updatePersonNameProvider(
-                personId,
-                controller.text,
-              ),
+          onPressed: () async {
+            isError.value = false;
+            final result = await ref.read(
+              updatePersonNameProvider(personId, controller.text).future,
             );
-
-            Navigator.of(context, rootNavigator: true)
-                .pop<PersonNameEditFormResult>(
-              PersonNameEditFormResult(true, controller.text),
-            );
+            isError.value = !result;
+            if (result) {
+              context.pop(PersonNameEditFormResult(true, controller.text));
+            }
           },
           child: Text(
             "Save",
